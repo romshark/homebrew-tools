@@ -2,7 +2,7 @@ class Gqlhash < Formula
   desc "GraphQL executable document hasher that ignores formatting diffs and comments"
   homepage "https://github.com/romshark/gqlhash"
   url "https://github.com/romshark/gqlhash/archive/refs/tags/v1.2.1.tar.gz"
-  sha256 "d3d9b103b85549845705425eb18af3cb917fb0aa69387d54a65377cfd4aacf85"
+  sha256 "2e93cee8a7734d45ed3497a5836c45fca601edc9f81e90cab86fb74c3aab212d"
   license "MIT"
 
   depends_on "go" => :build
