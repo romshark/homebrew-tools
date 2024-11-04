@@ -29,11 +29,9 @@ jobs:
       - name: Tap the repository
         run: brew tap romshark/tools
 
-      # Run `brew audit` to ensure the formula is up to Homebrew standards.
-      - name: Audit formulae
-        run: brew audit --strict --online ./Formula/*.rb
-
       # gqlhash
+      - name: Audit formulae
+        run: brew audit --strict --online gqlhash
       - name: Install formulae
         run: brew install romshark/tools/gqlhash
       - name: Test formulae
