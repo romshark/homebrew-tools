@@ -1,0 +1,40 @@
+name: Test Homebrew Formulae
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Homebrew
+        run: |
+          HOMEBREW_NO_AUTO_UPDATE=1
+          HOMEBREW_NO_INSTALL_CLEANUP=1
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> $GITHUB_ENV
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+      - name: Tap the repository
+        run: brew tap romshark/tools
+
+      # Run `brew audit` to ensure the formula is up to Homebrew standards.
+      - name: Audit formulae
+        run: brew audit --strict --online ./Formula/*.rb
+
+      # gqlhash
+      - name: Install formulae
+        run: brew install romshark/tools/gqlhash
+      - name: Test formulae
+        run: brew test romshark/tools/gqlhash
+      - name: Uninstall formulae
+        run: brew uninstall romshark/tools/gqlhash
