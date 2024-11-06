@@ -1,10 +1,10 @@
 class Gqlhash < Formula
   desc "GraphQL executable document hasher that ignores formatting diffs and comments"
   homepage "https://github.com/romshark/gqlhash"
-  url "https://github.com/romshark/gqlhash/archive/refs/tags/v1.2.2.tar.gz"
-  # curl -L -o v1.2.2.tar.gz https://github.com/romshark/gqlhash/archive/refs/tags/v1.2.2.tar.gz
-  # shasum -a 256 v1.2.2.tar.gz
-  sha256 "45d2afc07dabfbf332611ac09c645b3c773d9271e653bbe0ea735f3cf19c6414"
+  url "https://github.com/romshark/gqlhash/archive/refs/tags/v1.2.3.tar.gz"
+  # curl -L -o v1.2.3.tar.gz https://github.com/romshark/gqlhash/archive/refs/tags/v1.2.3.tar.gz
+  # shasum -a 256 v1.2.3.tar.gz
+  sha256 "058df40b17010e79a07628023b1a31ddff167c10a55dfbce01243f2962b717cb"
   license "MIT"
 
   depends_on "go" => :build
@@ -15,6 +15,6 @@ class Gqlhash < Formula
 
   test do
     output = shell_output("#{bin}/gqlhash -version")
-    assert_match "gqlhash v1.2.2", output
+    assert_match "gqlhash v1.2.3", output
   end
 end
