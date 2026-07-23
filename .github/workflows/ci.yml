@@ -11,15 +11,17 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    # Least privilege: this job only reads the repo (checkout + brew tap/test),
+    # so restrict the GITHUB_TOKEN to read-only access to repository contents.
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Set up Homebrew
         run: |
-          HOMEBREW_NO_AUTO_UPDATE=1
-          HOMEBREW_NO_INSTALL_CLEANUP=1
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
           echo "HOMEBREW_NO_AUTO_UPDATE=1" >> $GITHUB_ENV
           echo "HOMEBREW_NO_INSTALL_CLEANUP=1" >> $GITHUB_ENV
