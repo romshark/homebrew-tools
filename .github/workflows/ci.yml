@@ -1,4 +1,4 @@
-name: Test Homebrew Formulae
+name: Test Homebrew Casks
 
 on:
   push:
@@ -10,33 +10,46 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
-    # Least privilege: this job only reads the repo (checkout + brew tap/test),
+    # macOS, not Linux. gqlhash ships as a cask since v2, and a cask installs
+    # only on macOS — brew refuses it anywhere else. The formula this replaced
+    # built from source, which is why ubuntu-latest worked until now.
+    runs-on: macos-latest
+    # Least privilege: this job only reads the repo (checkout + brew tap/install),
     # so restrict the GITHUB_TOKEN to read-only access to repository contents.
     permissions:
       contents: read
+
+    strategy:
+      # Both casks of the tap. fail-fast off, so one breaking doesn't hide
+      # whether the other still installs.
+      fail-fast: false
+      matrix:
+        cask: [gqlhash, gqlhash-proxy]
+
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: 1
+      HOMEBREW_NO_INSTALL_CLEANUP: 1
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Set up Homebrew
-        run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          echo "HOMEBREW_NO_AUTO_UPDATE=1" >> $GITHUB_ENV
-          echo "HOMEBREW_NO_INSTALL_CLEANUP=1" >> $GITHUB_ENV
-          echo "PATH=/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$PATH" >> $GITHUB_ENV
-          echo "HOMEBREW_PREFIX=/home/linuxbrew/.linuxbrew" >> $GITHUB_ENV
-
+      # The runner ships Homebrew, so there's nothing to install first.
       - name: Tap the repository
         run: brew tap romshark/tools
 
-      # gqlhash
-      - name: Audit formulae
-        run: brew audit --strict --online gqlhash
-      - name: Install formulae
-        run: brew install romshark/tools/gqlhash
-      - name: Test formulae
-        run: brew test romshark/tools/gqlhash
-      - name: Uninstall formulae
-        run: brew uninstall romshark/tools/gqlhash
+      - name: Audit the cask
+        run: brew audit --cask --online romshark/tools/${{ matrix.cask }}
+
+      - name: Install the cask
+        run: brew install --cask romshark/tools/${{ matrix.cask }}
+
+      # brew test has no cask equivalent, so the binary is run instead.
+      # This is what catches an archive that unpacks to nothing and the postflight
+      # that clears the quarantine attribute: the binaries are unsigned,
+      # so a release Gatekeeper still holds fails here rather than on a user's machine.
+      - name: Run the installed binary
+        run: ${{ matrix.cask }} -version
+
+      - name: Uninstall the cask
+        run: brew uninstall --cask romshark/tools/${{ matrix.cask }}
