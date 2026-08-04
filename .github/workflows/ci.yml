@@ -8,6 +8,14 @@ on:
     branches:
       - main
 
+# A release pushes one commit per cask, seconds apart, so the run for the first
+# tests a tap where the other cask is still the version before. That run is
+# already answered by the one behind it: cancel it rather than leave a failure
+# in the history of every release. Per ref, so main and a branch don't cancel each other.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     # macOS, not Linux. gqlhash ships as a cask since v2, and a cask installs
