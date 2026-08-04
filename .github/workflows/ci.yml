@@ -37,6 +37,12 @@ jobs:
     env:
       HOMEBREW_NO_AUTO_UPDATE: 1
       HOMEBREW_NO_INSTALL_CLEANUP: 1
+      # brew audit --online reads the GitHub API. Unauthenticated that is 60 an
+      # hour for the runner's whole IP, shared with everyone else building on it,
+      # so an audit fails at random with nothing wrong with the cask.
+      # The job's own token raises it to 5000 and needs no permission beyond
+      # the read it already has.
+      HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - name: Checkout repository
@@ -46,7 +52,13 @@ jobs:
       - name: Tap the repository
         run: brew tap romshark/tools
 
+      # --online checks the upstream release through the GitHub API. Unauthenticated,
+      # that shares the 60-requests-per-hour anonymous budget with every other job
+      # leaving the same runner IP, so the audit fails on rate limit at random.
+      # The job's own GITHUB_TOKEN lifts it to the authenticated limit.
       - name: Audit the cask
+        env:
+          HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: brew audit --cask --online romshark/tools/${{ matrix.cask }}
 
       - name: Install the cask
