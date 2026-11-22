@@ -17,7 +17,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Every cask in Casks/. A release that adds a cask, as toki's first,
+  # gets it tested without an edit here, and a cask listed before its
+  # release pushed it can't fail the run.
+  casks:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      casks: ${{ steps.list.outputs.casks }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: List the casks
+        id: list
+        run: echo "casks=$(ls Casks | sed 's/\.rb$//' | jq -Rnc '[inputs]')" >> "$GITHUB_OUTPUT"
+
   test:
+    needs: casks
     # macOS, not Linux. gqlhash ships as a cask since v2, and a cask installs
     # only on macOS — brew refuses it anywhere else. The formula this replaced
     # built from source, which is why ubuntu-latest worked until now.
@@ -28,11 +46,11 @@ jobs:
       contents: read
 
     strategy:
-      # Both casks of the tap. fail-fast off, so one breaking doesn't hide
-      # whether the other still installs.
+      # Every cask of the tap. fail-fast off, so one breaking doesn't hide
+      # whether the others still install.
       fail-fast: false
       matrix:
-        cask: [gqlhash, gqlhash-proxy]
+        cask: ${{ fromJSON(needs.casks.outputs.casks) }}
 
     env:
       HOMEBREW_NO_AUTO_UPDATE: 1
