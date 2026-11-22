@@ -70,6 +70,12 @@ jobs:
       - name: Tap the repository
         run: brew tap romshark/tools
 
+      # Homebrew 7 refuses to load anything from a non-official tap that isn't trusted.
+      # `brew install` of a full name like romshark/tools/gqlhash counts as trusting
+      # that one cask, but `brew audit` doesn't, so trust the tap.
+      - name: Trust the tap
+        run: brew trust --tap romshark/tools
+
       # --online checks the upstream release through the GitHub API. Unauthenticated,
       # that shares the 60-requests-per-hour anonymous budget with every other job
       # leaving the same runner IP, so the audit fails on rate limit at random.
